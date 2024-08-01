@@ -39,6 +39,7 @@
           # bring all the dependencies needed to build sqlelf
           inputsFrom = [all-follow];
           postVenvCreation = ''
+            pip install --editable ".[dev]"
           '';
         };
       });

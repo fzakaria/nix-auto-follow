@@ -50,5 +50,12 @@ There is with this script 🥳
 Simply run the script which will modify your `flake.lock` file. Commit the change and voila!
 
 ```console
-> python all-follow.py -i
+> auto-follow -i
+```
+
+## Development
+Running the development shell should drop you into a shell with all the required dependencies and the editable installation already done.
+
+```console
+> nix develop
 ```
