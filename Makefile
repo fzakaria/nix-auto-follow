@@ -28,4 +28,4 @@ lint:             ## Run pep8, black, mypy linters.
 
 .PHONY: test
 test:             ## Run pytest primarily.
-	pytest
+	python -m pytest

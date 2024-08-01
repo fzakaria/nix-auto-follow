@@ -8,6 +8,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05";
+    nixpkgs-stable.follows = "nixpkgs";
   };
 
   outputs = {
@@ -15,11 +16,13 @@
     a,
     b,
     nixpkgs,
+    nixpkgs-stable,
   }: {
     versions = {
       a.nixpkgs = a.versions.nixpkgs;
       b.nixpkgs = b.versions.nixpkgs;
-      nixpkgs = nixpkgs.lib.version;
+      nixpkgs = nixpkgs.lib.version; 
+      nixpkgs-stable = nixpkgs-stable.lib.version;
     };
   };
 }

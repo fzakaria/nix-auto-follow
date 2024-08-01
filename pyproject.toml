@@ -41,6 +41,9 @@ dev = [
     "coverage[toml] >= 7.3",
 ]
 
+[tool.setuptools.package-data]
+nix_auto_follow = ["py.typed"]
+
 [tool.setuptools_scm]
 write_to = "src/nix_auto_follow/_version.py"
 
@@ -72,3 +75,8 @@ include = ["src", "tests"]
 [tool.coverage.run]
 omit = ["src/nix_auto_follow/_version.py", "src/**/__init__.py", "tests/**/__init__.py"]
 branch = true
+
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+]
