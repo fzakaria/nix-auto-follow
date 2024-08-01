@@ -90,7 +90,11 @@ def update_flake_lock(flake_lock: LockFile) -> LockFile:
     return flake_lock
 
 
-def start(args: list[str] = sys.argv[1:], stdin: TextIO = sys.stdin) -> None:
+def start(
+    args: list[str] = sys.argv[1:],
+    stdin: TextIO = sys.stdin,
+    stdout: TextIO = sys.stdout,
+) -> None:
     parser = argparse.ArgumentParser(
         description="Update nix flake.lock file to autofollow."
     )
@@ -110,9 +114,13 @@ def start(args: list[str] = sys.argv[1:], stdin: TextIO = sys.stdin) -> None:
     program_args: ProgramArguments = parser.parse_args(
         args, namespace=ProgramArguments()
     )
-    # Read the content of the file
-    with open(program_args.filename, "r") as f:
-        input_data = f.read()
+
+    if not stdin.isatty():
+        input_data = stdin.read()
+    else:
+        # Read the content of the file
+        with open(program_args.filename, "r") as f:
+            input_data = f.read()
 
     # Load the JSON data from the input
     flake_lock_json: dict[str, Any] = json.loads(input_data)
@@ -126,4 +134,4 @@ def start(args: list[str] = sys.argv[1:], stdin: TextIO = sys.stdin) -> None:
             f.write(modified_data)
     else:
         # Write the modified JSON to stdout
-        print(modified_data)
+        print(modified_data, file=stdout)
