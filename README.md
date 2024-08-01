@@ -50,12 +50,34 @@ There is with this script 🥳
 Simply run the script which will modify your `flake.lock` file. Commit the change and voila!
 
 ```console
-> auto-follow -i
+❯ auto-follow -i
 ```
+
+## Validation
+
+The `auto-follow` tool includes a _check mode_ ; so that you can validate you are correctly following everything.
+
+```console
+❯ auto-follow -c
+All ok!
+```
+
+This will fail (exit code 1) if not everything can be deduped.
+
+```console
+❯ auto-follow -c
+Node a has input nixpkgs pointing to nixpkgs_2 which is not the same as b's nixpkgs which is nixpkgs_3 in the lockfile.
+Please add 'nixpkgs.url = "github:nixos/nixpkgs/nixos-23.11"' or 'nixpkgs.url = "github:nixos/nixpkgs/nixos-23.05'
+```
+
+Note: This can still happen _even after modifying your lock file_.
+The reason for this is that if the top-level Nix expression (your application _flake.nix_) does not include all possible flakes, then
+there is no way for us to know which of the two choices we should consolidate to. The tool prints a friendly message showing some of the possible
+options to select amongst.
 
 ## Development
 Running the development shell should drop you into a shell with all the required dependencies and the editable installation already done.
 
 ```console
-> nix develop
+❯ nix develop
 ```
