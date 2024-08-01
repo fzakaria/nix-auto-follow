@@ -12,11 +12,11 @@
       import nixpkgs {
         inherit system;
         overlays = [
-          self.overlay
+          self.overlays.default
         ];
       });
   in {
-    overlay = final: prev: {
+    overlays.default = final: prev: {
       all-follow = prev.callPackage ./derivation.nix {};
     };
 
