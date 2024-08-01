@@ -10,13 +10,16 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05";
   };
 
-  outputs = { self, a, b, nixpkgs }: 
-  {
+  outputs = {
+    self,
+    a,
+    b,
+    nixpkgs,
+  }: {
     versions = {
-        a.nixpkgs = a.versions.nixpkgs;
-        b.nixpkgs = b.versions.nixpkgs;
-        nixpkgs = nixpkgs.lib.version;
+      a.nixpkgs = a.versions.nixpkgs;
+      b.nixpkgs = b.versions.nixpkgs;
+      nixpkgs = nixpkgs.lib.version;
     };
-    
   };
 }

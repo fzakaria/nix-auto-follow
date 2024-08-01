@@ -1,0 +1,74 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm[toml]", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nix-auto-follow"
+# Using the dynamic version
+# version = "0.0.1"
+dynamic = ["version"]
+authors = [{ name = "Farid Zakaria", email = "farid.m.zakaria@gmail.com" }]
+readme = "README.md"
+description = "Achieve nirvana through automatically following all flake inputs."
+license = { file = "LICENSE" }
+requires-python = ">=3.10,<4.0"
+keywords = []
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+]
+dependencies = [
+]
+
+[project.urls]
+Documentation = "https://github.com/fzakaria/nix-auto-follow#readme"
+Issues = "https://github.com/fzakaria/nix-auto-follow/issues"
+Source = "https://github.com/fzakaria/nix-auto-follow"
+
+[project.optional-dependencies]
+dev = [
+    "black >= 23.7.0",
+    "isort >= 5.12.0",
+    "flake8 >= 6.1.0",
+    "flake8-print >= 5.0.0",
+    "pyright >= 1.1.350",
+    "pytest >= 7.4.0",
+    "mypy >= 1.8.0",
+    "coverage[toml] >= 7.3",
+]
+
+[tool.setuptools_scm]
+write_to = "src/nix_auto_follow/_version.py"
+
+[project.scripts]
+auto-follow = "nix_auto_follow.cli:start"
+
+[tool.isort]
+skip = [".git", "result"]
+profile = "black"
+
+[tool.black]
+extend-exclude = '''
+(
+    src/nix_auto_follow/_version.py
+)
+'''
+
+[tool.pyright]
+exclude = ["**/__pycache__", "src/nix_auto_follow/_version.py"]
+
+reportMissingImports = true
+reportMissingTypeStubs = true
+useLibraryCodeForTypes = true
+
+pythonVersion = "3.10"
+pythonPlatform = "Linux"
+include = ["src", "tests"]
+
+[tool.coverage.run]
+omit = ["src/nix_auto_follow/_version.py", "src/**/__init__.py", "tests/**/__init__.py"]
+branch = true

@@ -1,5 +1,7 @@
 # nix-auto-follow
 
+[![built with nix](https://builtwithnix.org/badge.svg)](https://builtwithnix.org)
+
 > A (python) script to achieve automatically following all flake inputs for Nix.
 
 If you have used [Nix](https://nixos.org) flakes, you likely encountered something like this 🤢

@@ -1,7 +1,14 @@
-import sys
-from typing import Any, Dict
-import json
 import argparse
+import json
+import sys
+from dataclasses import dataclass
+from typing import Any, Dict, TextIO
+
+
+@dataclass
+class ProgramArguments:
+    filename: str = "flake.lock"
+    in_place: bool = False
 
 
 def update_flake_lock(input_data: str) -> str:
@@ -27,32 +34,43 @@ def update_flake_lock(input_data: str) -> str:
                 duplicate_ref = node["inputs"][key]
                 # if the type of the ref is a list, then it's already
                 # using follows in the flake.nix so skip it.
-                if type(duplicate_ref) == list:
+                if duplicate_ref is list:
                     continue
                 # now overwrite it!
                 flake_lock["nodes"][duplicate_ref] = value
-    
+
     return json.dumps(flake_lock, indent=2)
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Update nix flake.lock file to autofollow.")
-    parser.add_argument("filename", help="The path to the flake.lock file.", default="flake.lock", nargs='?')
-    parser.add_argument("--in-place", "-i", action="store_true", help="Write the output back to the same file.")
-    
-    args = parser.parse_args()
-    
+
+def start(args: list[str] = sys.argv[1:], stdin: TextIO = sys.stdin) -> None:
+    parser = argparse.ArgumentParser(
+        description="Update nix flake.lock file to autofollow."
+    )
+    parser.add_argument(
+        "filename",
+        help="The path to the flake.lock file.",
+        default="flake.lock",
+        nargs="?",
+    )
+    parser.add_argument(
+        "--in-place",
+        "-i",
+        action="store_true",
+        help="Write the output back to the same file.",
+    )
+
+    program_args: ProgramArguments = parser.parse_args(
+        args, namespace=ProgramArguments()
+    )
     # Read the content of the file
-    with open(args.filename, 'r') as f:
+    with open(program_args.filename, "r") as f:
         input_data = f.read()
 
     modified_data = update_flake_lock(input_data)
-    if args.in_place:
+    if program_args.in_place:
         # Write the modified JSON back to the file
-        with open(args.filename, 'w') as f:
+        with open(program_args.filename, "w") as f:
             f.write(modified_data)
     else:
         # Write the modified JSON to stdout
         print(modified_data)
-
-if __name__ == "__main__":
-    main()
