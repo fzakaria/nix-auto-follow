@@ -25,6 +25,10 @@ def update_flake_lock(input_data: str) -> str:
         for node in flake_lock["nodes"].values():
             if "inputs" in node and key in node["inputs"]:
                 duplicate_ref = node["inputs"][key]
+                # if the type of the ref is a list, then it's already
+                # using follows in the flake.nix so skip it.
+                if type(duplicate_ref) == list:
+                    continue
                 # now overwrite it!
                 flake_lock["nodes"][duplicate_ref] = value
     
