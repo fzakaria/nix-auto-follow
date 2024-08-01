@@ -42,5 +42,6 @@ in
       homepage = "https://github.com/fzakaria/nix-auto-follow";
       description = "Achieve nirvana through automatically following all flake inputs.";
       license = lib.licenses.mit;
+      mainProgram = "auto-follow";
     };
   }
