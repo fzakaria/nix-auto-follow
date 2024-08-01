@@ -2,6 +2,20 @@
 
 [![built with nix](https://builtwithnix.org/badge.svg)](https://builtwithnix.org)
 
+```console
+❯ nix run github:fzakaria/nix-auto-follow -- --help
+usage: auto-follow [-h] [--in-place] [filename]
+
+Update nix flake.lock file to autofollow.
+
+positional arguments:
+  filename        The path to the flake.lock file.
+
+options:
+  -h, --help      show this help message and exit
+  --in-place, -i  Write the output back to the same file.
+```
+
 > A (python) script to achieve automatically following all flake inputs for Nix.
 
 If you have used [Nix](https://nixos.org) flakes, you likely encountered something like this 🤢
