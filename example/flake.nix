@@ -21,7 +21,8 @@
     versions = {
       a.nixpkgs = a.versions.nixpkgs;
       b.nixpkgs = b.versions.nixpkgs;
-      nixpkgs = nixpkgs.lib.version;
+      c.nixpkgs = a.c.versions.nixpkgs;
+      nixpkgs = nixpkgs.lib.version; 
       nixpkgs-stable = nixpkgs-stable.lib.version;
     };
   };
