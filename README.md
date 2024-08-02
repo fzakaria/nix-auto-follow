@@ -1,6 +1,7 @@
 # nix-auto-follow
 
 [![built with nix](https://builtwithnix.org/badge.svg)](https://builtwithnix.org)
+![github master branch workflow](https://github.com/fzakaria/nix-auto-follow/actions/workflows/main_nix.yml/badge.svg?branch=main)
 
 ```console
 ❯ nix run github:fzakaria/nix-auto-follow -- --help
