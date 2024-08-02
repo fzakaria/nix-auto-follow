@@ -29,18 +29,20 @@ class Node:
     def get_url(self) -> str:
         if "original" not in self.remaining:
             raise ValueError("Node does not have a locked attribute.")
-        locked = self.remaining["original"]
-        match locked["type"]:
+        original = self.remaining["original"]
+        ref = f"/{original['ref']}" if "ref" in original else ""
+
+        match original["type"]:
             case "github":
-                return f"github:{locked['owner']}/{locked['repo']}/{locked['ref']}"
+                return f"github:{original['owner']}/{original['repo']}{ref}"
             case "gitlab":
-                return f"gitlab:{locked['owner']}/{locked['repo']}/{locked['ref']}"
+                return f"gitlab:{original['owner']}/{original['repo']}{ref}"
             case "bitbucket":
-                return f"bitbucket:{locked['owner']}/{locked['repo']}/{locked['ref']}"
+                return f"bitbucket:{original['owner']}/{original['repo']}{ref}"
             case "path":
-                return f"file:{locked['path']}"
+                return f"file:{original['path']}"
             case _:
-                raise ValueError(f"Unknown type {locked['type']}")
+                raise ValueError(f"Unknown type {original['type']}")
 
 
 @dataclass
