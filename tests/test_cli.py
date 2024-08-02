@@ -3,7 +3,33 @@ import json
 
 import pytest
 
-from nix_auto_follow.cli import LockFile, check_lock_file, start, update_flake_lock
+from nix_auto_follow.cli import (
+    LockFile,
+    Node,
+    check_lock_file,
+    start,
+    update_flake_lock,
+)
+
+
+def test_get_url_for_node() -> None:
+    node = Node.from_dict(
+        {
+            "original": {
+                "owner": "nixos",
+                "ref": "nixos-24.05",
+                "repo": "nixpkgs",
+                "type": "github",
+            }
+        }
+    )
+    assert node.get_url() == "github:nixos/nixpkgs/nixos-24.05"
+
+    # without ref
+    node = Node.from_dict(
+        {"original": {"owner": "nixos", "repo": "nixpkgs", "type": "github"}}
+    )
+    assert node.get_url() == "github:nixos/nixpkgs"
 
 
 def test_simple_follow_flake() -> None:
