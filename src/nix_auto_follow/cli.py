@@ -126,7 +126,7 @@ def update_flake_lock(flake_lock: LockFile) -> LockFile:
     # root.inputs = {"nixpkgs": "nixpkgs_3"}
     #
     # this generates {"nixpkgs": ["nixpkgs_1", "nixpkgs_2", "nixpkgs_3"]}
-    input_refs = {}
+    input_refs: dict[str, list[str]] = {}
     for node in flake_lock.nodes.values():
         if node.inputs is None:
             continue
