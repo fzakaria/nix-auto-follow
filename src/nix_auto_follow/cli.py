@@ -27,20 +27,27 @@ class Node:
         return {"inputs": self.inputs, **self.remaining}
 
     def get_url(self) -> str:
+        """
+        Should reconstruct the Flake URL for the given Node.
+
+        @see https://nix.dev/manual/nix/2.22/command-ref/new-cli/nix3-flake#types
+        """
         if "original" not in self.remaining:
             raise ValueError("Node does not have a locked attribute.")
         original = self.remaining["original"]
         ref = f"/{original['ref']}" if "ref" in original else ""
+        rev = f"/{original['rev']}" if "rev" in original else ""
+        rev_or_ref = next((x for x in [rev, ref] if x), "")
 
         match original["type"]:
             case "github":
-                return f"github:{original['owner']}/{original['repo']}{ref}"
+                return f"github:{original['owner']}/{original['repo']}{rev_or_ref}"
             case "gitlab":
-                return f"gitlab:{original['owner']}/{original['repo']}{ref}"
-            case "bitbucket":
-                return f"bitbucket:{original['owner']}/{original['repo']}{ref}"
+                return f"gitlab:{original['owner']}/{original['repo']}{rev_or_ref}"
             case "path":
                 return f"file:{original['path']}"
+            case "indirect":
+                return f"{original['id']}{ref}{rev}"
             case _:
                 raise ValueError(f"Unknown type {original['type']}")
 
