@@ -56,7 +56,7 @@ in
       ]
       ++ [pyright];
 
-    checkPhase = ''
+    postCheck = ''
       make lint
     '';
 
