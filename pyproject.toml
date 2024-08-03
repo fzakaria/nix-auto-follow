@@ -35,7 +35,9 @@ dev = [
     "isort >= 5.12.0",
     "flake8 >= 6.1.0",
     "flake8-print >= 5.0.0",
-    "pyright >= 1.1.350",
+    # FIXME: Doesn't work in Nix environment
+    # either add it as a nativeCheckInputs from pypi or remove it
+    # "pyright >= 1.1.350",
     "pytest >= 7.4.0",
     "mypy >= 1.8.0",
     "coverage[toml] >= 7.3",

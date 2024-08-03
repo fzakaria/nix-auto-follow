@@ -33,7 +33,24 @@ in
     nativeCheckInputs = with python3Packages;
       [pytestCheckHook flake8 mypy isort black]
       ++ [
-        # FIXME: we are still types-pygments
+        (python3Packages.buildPythonPackage rec {
+          pname = "types-Pygments";
+          version = "2.17.0.20240310";
+
+          src = python.pkgs.fetchPypi {
+            inherit pname version;
+            sha256 = "sha256-sdl+kFzjY0PHKDsDGRgq5tT5ZxiPNh9FUCoYrkPgPh8=";
+          };
+          nativeBuildInputs = [
+            types-setuptools
+            types-docutils
+          ];
+          meta = with pkgs.lib; {
+            homepage = "https://github.com/python/typeshed";
+            description = "Typing stubs for Pygments";
+            license = licenses.asl20;
+          };
+        })
         types-colorama
         types-setuptools
       ]
