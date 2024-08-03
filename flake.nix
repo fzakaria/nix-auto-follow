@@ -1,6 +1,6 @@
 {
   description = "Achieve nirvana through automatically following all flake inputs.";
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
 
   outputs = {
     self,

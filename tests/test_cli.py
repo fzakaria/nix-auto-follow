@@ -12,24 +12,65 @@ from nix_auto_follow.cli import (
 )
 
 
-def test_get_url_for_node() -> None:
-    node = Node.from_dict(
-        {
-            "original": {
-                "owner": "nixos",
-                "ref": "nixos-24.05",
-                "repo": "nixpkgs",
-                "type": "github",
-            }
-        }
-    )
-    assert node.get_url() == "github:nixos/nixpkgs/nixos-24.05"
-
-    # without ref
-    node = Node.from_dict(
-        {"original": {"owner": "nixos", "repo": "nixpkgs", "type": "github"}}
-    )
-    assert node.get_url() == "github:nixos/nixpkgs"
+@pytest.mark.parametrize(
+    "node, expected_url",
+    [
+        (
+            Node.from_dict(
+                {
+                    "original": {
+                        "owner": "nixos",
+                        "ref": "nixos-24.05",
+                        "repo": "nixpkgs",
+                        "type": "github",
+                    }
+                }
+            ),
+            "github:nixos/nixpkgs/nixos-24.05",
+        ),
+        (
+            Node.from_dict(
+                {"original": {"owner": "nixos", "repo": "nixpkgs", "type": "github"}}
+            ),
+            "github:nixos/nixpkgs",
+        ),
+        (
+            Node.from_dict({"original": {"id": "nixpkgs", "type": "indirect"}}),
+            "nixpkgs",
+        ),
+        (
+            Node.from_dict({"original": {"id": "nixpkgs", "type": "indirect"}}),
+            "nixpkgs",
+        ),
+        (
+            Node.from_dict(
+                {
+                    "original": {
+                        "id": "nixpkgs",
+                        "ref": "nixos-unstable",
+                        "type": "indirect",
+                    }
+                }
+            ),
+            "nixpkgs/nixos-unstable",
+        ),
+        (
+            Node.from_dict(
+                {
+                    "original": {
+                        "id": "nixpkgs",
+                        "ref": "nixos-unstable",
+                        "rev": "23.11",
+                        "type": "indirect",
+                    }
+                }
+            ),
+            "nixpkgs/nixos-unstable/23.11",
+        ),
+    ],
+)
+def test_get_url_for_node(node: Node, expected_url: str) -> None:
+    assert node.get_url() == expected_url
 
 
 def test_simple_follow_flake() -> None:
