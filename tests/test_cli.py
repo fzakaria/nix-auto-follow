@@ -96,7 +96,7 @@ def test_simple_root_has_follow_flake() -> None:
 def test_full_start() -> None:
     with open("tests/fixtures/root_has_follow.json") as f:
         stdout = io.StringIO()
-        start(stdin=f, stdout=stdout)
+        start(args=[], stdin=f, stdout=stdout)
         flake_lock = LockFile.from_dict(json.loads(stdout.getvalue()))
         assert flake_lock.root == "root"
 

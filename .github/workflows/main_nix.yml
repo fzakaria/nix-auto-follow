@@ -19,3 +19,8 @@ jobs:
       run: |
         nix build
         nix flake check
+    - name: "Upload coverage report"
+      uses: actions/upload-artifact@v3
+      with:
+        name: html-coverage
+        path: htmlcov/

@@ -1,0 +1,6 @@
+[run]
+omit = src/nix_auto_follow/_version.py
+       src/**/__init__.py
+       tests/**/__init__.py
+source = src/
+branch = true
