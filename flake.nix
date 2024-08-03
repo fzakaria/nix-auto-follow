@@ -43,5 +43,11 @@
           '';
         };
       });
+
+    checks = forAllSystems (system: {
+      main = self.packages.${system}.default;
+      htmlcov = self.packages.${system}.default.htmlcov;
+    });
+
   };
 }
