@@ -17,10 +17,10 @@ jobs:
       uses: DeterminateSystems/magic-nix-cache-action@main
     - name: Build & check
       run: |
-        nix build
+        nix build ".#default.htmlcov"
         nix flake check
     - name: "Upload coverage report"
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: html-coverage
-        path: htmlcov/
+        path: result-htmlcov/

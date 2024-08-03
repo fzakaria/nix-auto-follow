@@ -19,6 +19,7 @@ in
         ./setup.cfg
         ./mypy.ini
         ./Makefile
+        ./.coveragerc
       ];
     };
 
@@ -31,7 +32,7 @@ in
     ];
 
     nativeCheckInputs = with python3Packages;
-      [pytestCheckHook flake8 mypy isort black]
+      [pytestCheckHook flake8 mypy isort black pytest-cov]
       ++ [
         # FIXME: we are still types-pygments
         types-colorama
@@ -39,9 +40,13 @@ in
       ]
       ++ [pyright];
 
-    checkPhase = ''
+    postCheck = ''
       make lint
+      mkdir $htmlcov
+      mv htmlcov/* $htmlcov
     '';
+
+    outputs = [ "out" "htmlcov" ];
 
     meta = {
       homepage = "https://github.com/fzakaria/nix-auto-follow";

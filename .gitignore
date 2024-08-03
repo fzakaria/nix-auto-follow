@@ -162,4 +162,5 @@ cython_debug/
 #.idea/
 
 result
+result-htmlcov
 .direnv/
