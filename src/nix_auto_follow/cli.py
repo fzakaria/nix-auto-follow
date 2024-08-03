@@ -119,34 +119,37 @@ def update_flake_lock(flake_lock: LockFile) -> LockFile:
     if root_inputs is None:
         return flake_lock
 
-    # Update all nodes with root inputs
-    for key, ref in root_inputs.items():
-        # key is the name of the input flake
-        # ref is the ref in the nodes
+    # map each node's inputs to their references, e.g. for
+    #
+    # a.inputs = {"nixpkgs": "nixpkgs_1"}
+    # b.inputs = {"nixpkgs": "nixpkgs_2"}
+    # root.inputs = {"nixpkgs": "nixpkgs_3"}
+    #
+    # this generates {"nixpkgs": ["nixpkgs_1", "nixpkgs_2", "nixpkgs_3"]}
+    input_refs = {}
+    for node in flake_lock.nodes.values():
+        if node.inputs is None:
+            continue
+        for node_input_key, node_input_ref in node.inputs.items():
+            if isinstance(node_input_ref, list):
+                continue
+            input_refs.setdefault(node_input_key, []).append(node_input_ref)
 
-        # if the type of the ref is a list, then it's already
-        # using follows in the flake.nix so skip it.
+    # for each node input that matches a root node input, replace it
+    # with the root node's input definition; e.g. for
+    #
+    # a.inputs = {"nixpkgs": "nixpkgs_1"}
+    # b.inputs = {"nixpkgs": "nixpkgs_2"}
+    # root.inputs = {"nixpkgs": "nixpkgs_3"}
+    # input_refs = {"nixpkgs": ["nixpkgs_1", "nixpkgs_2", "nixpkgs_3"]}
+    #
+    # rewrite replace the definitions of "nixpkgs_1" and "nixpkg_2"
+    # with "nixpkgs_3"'s definition
+    for key, ref in root_inputs.items():
         if isinstance(ref, list):
             continue
-
-        value = flake_lock.nodes[ref]
-
-        # for each key, find all other uses of it in lockfile to get
-        # all the nodes to override.
-        # We will set the value of it in nodes to the value stored
-        # above.
-        for node in flake_lock.nodes.values():
-            if node.inputs is None:
-                continue
-
-            if key in node.inputs:
-                duplicate_ref = node.inputs[key]
-                # if the type of the ref is a list, then it's already
-                # using follows in the flake.nix so skip it.
-                if isinstance(duplicate_ref, list):
-                    continue
-                # now overwrite it!
-                flake_lock.nodes[duplicate_ref] = value
+        for node_ref in input_refs.get(key, ()):
+            flake_lock.nodes[node_ref] = flake_lock.nodes[ref]
 
     return flake_lock
 
