@@ -32,6 +32,11 @@ in
 
     nativeCheckInputs = with python3Packages;
       [pytestCheckHook flake8 mypy isort black]
+      ++ [
+        # FIXME: we are still types-pygments
+        types-colorama
+        types-setuptools
+      ]
       ++ [pyright];
 
     checkPhase = ''

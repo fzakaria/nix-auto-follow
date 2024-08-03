@@ -69,7 +69,7 @@ from nix_auto_follow.cli import (
         ),
     ],
 )
-def test_get_url_for_node(node, expected_url) -> None:
+def test_get_url_for_node(node: Node, expected_url: str) -> None:
     assert node.get_url() == expected_url
 
 
