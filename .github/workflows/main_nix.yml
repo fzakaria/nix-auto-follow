@@ -17,5 +17,6 @@ jobs:
       uses: DeterminateSystems/magic-nix-cache-action@main
     - name: Build & check
       run: |
+        nix fmt -- --check . --exclude ./example/
         nix build
         nix flake check

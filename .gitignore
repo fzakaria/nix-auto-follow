@@ -163,3 +163,4 @@ cython_debug/
 
 result
 .direnv/
+src/nix_auto_follow/_version.py
