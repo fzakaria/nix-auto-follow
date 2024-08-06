@@ -71,9 +71,9 @@ class LockFile:
 
     def to_dict(self) -> dict[str, Any]:
         return {
+            "nodes": {key: value.to_dict() for key, value in self.nodes.items()},
             "root": self.root,
             "version": self.version,
-            "nodes": {key: value.to_dict() for key, value in self.nodes.items()},
         }
 
 
