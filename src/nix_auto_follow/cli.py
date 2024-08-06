@@ -24,7 +24,10 @@ class Node:
         return cls(inputs, remaining)
 
     def to_dict(self) -> dict[str, Any]:
-        return {"inputs": self.inputs, **self.remaining}
+        if self.inputs is None:
+            return self.remaining
+        else:
+            return {"inputs": self.inputs, **self.remaining}
 
     def get_url(self) -> str:
         """
