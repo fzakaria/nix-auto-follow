@@ -24,6 +24,11 @@ class Node:
         return cls(inputs, remaining)
 
     def to_dict(self) -> dict[str, Any]:
+        """Convert the Node to a dictionary.
+        
+        In order to minimize diff with the original lockfile,
+        we only include the `inputs` key if it is not None.
+        """
         if self.inputs is None:
             return self.remaining
         else:
