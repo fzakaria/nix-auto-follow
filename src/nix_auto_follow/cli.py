@@ -24,7 +24,15 @@ class Node:
         return cls(inputs, remaining)
 
     def to_dict(self) -> dict[str, Any]:
-        return {"inputs": self.inputs, **self.remaining}
+        """Convert the Node to a dictionary.
+
+        In order to minimize diff with the original lockfile,
+        we only include the `inputs` key if it is not None.
+        """
+        if self.inputs is None:
+            return self.remaining
+        else:
+            return {"inputs": self.inputs, **self.remaining}
 
     def get_url(self) -> str:
         """
@@ -71,9 +79,9 @@ class LockFile:
 
     def to_dict(self) -> dict[str, Any]:
         return {
+            "nodes": {key: value.to_dict() for key, value in self.nodes.items()},
             "root": self.root,
             "version": self.version,
-            "nodes": {key: value.to_dict() for key, value in self.nodes.items()},
         }
 
 
@@ -209,7 +217,7 @@ def start(
     if program_args.in_place:
         # Write the modified JSON back to the file
         with open(program_args.filename, "w") as f:
-            f.write(modified_data)
+            f.write(modified_data + "\n")
     else:
         # Write the modified JSON to stdout
         print(modified_data, file=stdout)

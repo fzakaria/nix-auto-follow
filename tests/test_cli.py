@@ -130,3 +130,48 @@ def test_check_lock_file_fail() -> None:
         modified_lock = update_flake_lock(flake_lock)
         # still fails
         assert not check_lock_file(modified_lock)
+
+
+def test_do_not_include_empty_inputs() -> None:
+    with open("tests/fixtures/simple.json") as f:
+        flake_json = json.load(f)
+        flake_lock = LockFile.from_dict(flake_json)
+        # precondition: inputs does not exist in original lock file
+        assert "inputs" not in flake_json["nodes"]["nixpkgs"]
+        assert flake_lock.nodes["nixpkgs"].inputs is None
+
+        modified_lock = update_flake_lock(flake_lock)
+        modified_lock_json = modified_lock.to_dict()
+        # postcondition: inputs does not exist in modified lock file
+        assert "inputs" not in modified_lock_json["nodes"]["nixpkgs"]
+        assert modified_lock.nodes["nixpkgs"].inputs is None
+
+
+def test_top_level_keys_sorted() -> None:
+    with open("tests/fixtures/simple.json") as f:
+        flake_json = json.load(f)
+        # precondition: keys are sorted in original file
+        assert list(flake_json.keys()) == sorted(flake_json.keys())
+
+        flake_lock = LockFile.from_dict(flake_json)
+        modified_lock = update_flake_lock(flake_lock)
+        modified_lock_json = modified_lock.to_dict()
+
+        # postcondition: keys are sorted in modified file
+        assert list(modified_lock_json.keys()) == sorted(modified_lock_json.keys())
+
+
+def test_node_keys_sorted() -> None:
+    with open("tests/fixtures/root_has_follow.json") as f:
+        flake_json = json.load(f)
+        # precondition: keys are sorted in original file
+        assert list(flake_json["nodes"].keys()) == sorted(flake_json["nodes"].keys())
+
+        flake_lock = LockFile.from_dict(flake_json)
+        modified_lock = update_flake_lock(flake_lock)
+        modified_lock_json = modified_lock.to_dict()
+
+        # postcondition: keys are sorted in modified file
+        assert list(modified_lock_json["nodes"].keys()) == sorted(
+            modified_lock_json["nodes"].keys()
+        )
