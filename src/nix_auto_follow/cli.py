@@ -172,7 +172,7 @@ def start(
     )
     parser.add_argument(
         "filename",
-        help="The path to the flake.lock file.",
+        help="The path to the flake.lock file. '-' for stdin.",
         default="flake.lock",
         nargs="?",
     )
@@ -193,7 +193,7 @@ def start(
         args, namespace=ProgramArguments()
     )
 
-    if not stdin.isatty():
+    if program_args.filename == "-":
         input_data = stdin.read()
     else:
         # Read the content of the file
@@ -215,6 +215,8 @@ def start(
     )
 
     if program_args.in_place:
+        if program_args.filename == "-":
+            raise ValueError("Cannot use --in-place with stdin.")
         # Write the modified JSON back to the file
         with open(program_args.filename, "w") as f:
             f.write(modified_data + "\n")
