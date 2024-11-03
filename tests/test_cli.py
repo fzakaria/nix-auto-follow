@@ -67,6 +67,43 @@ from nix_auto_follow.cli import (
             ),
             "nixpkgs/nixos-unstable/23.11",
         ),
+        (
+            Node.from_dict(
+                {
+                    "original": {
+                        "type": "git",
+                        "submodules": True,
+                        "url": "https://github.com/kaeeraa/ayugram-desktop",
+                    }
+                }
+            ),
+            "git+https://github.com/kaeeraa/ayugram-desktop?submodules=1",
+        ),
+        (
+            Node.from_dict(
+                {
+                    "original": {
+                        "type": "git",
+                        "shallow": True,
+                        "url": "ssh://git@github.com/mslxl/scripts.git",
+                    }
+                }
+            ),
+            "git+ssh://git@github.com/mslxl/scripts.git?shallow=1",
+        ),
+        (
+            Node.from_dict(
+                {
+                    "original": {
+                        "type": "git",
+                        "ref": "main",
+                        "shallow": True,
+                        "url": "ssh://git@gitlab.com/akibahmed/sops-secrects.git",
+                    }
+                }
+            ),
+            "git+ssh://git@gitlab.com/akibahmed/sops-secrects.git?ref=main&shallow=1",
+        ),
     ],
 )
 def test_get_url_for_node(node: Node, expected_url: str) -> None:

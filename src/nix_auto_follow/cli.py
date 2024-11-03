@@ -3,6 +3,7 @@ import json
 import sys
 from dataclasses import dataclass, field
 from typing import Any, TextIO
+from urllib.parse import urlencode
 
 
 @dataclass
@@ -48,6 +49,17 @@ class Node:
         rev_or_ref = next((x for x in [rev, ref] if x), "")
 
         match original["type"]:
+            case "git":
+                base_url = f"git+{original['url']}"
+                filtered_params = {
+                    k: (1 if v is True else 0 if v is False else v)
+                    for k, v in original.items()
+                    if k in ["rev", "ref", "submodules", "shallow"]
+                    and v not in (None, "")
+                }
+                query_string = urlencode(filtered_params)
+                full_url = f"{base_url}?{query_string}" if query_string else base_url
+                return full_url
             case "github":
                 return f"github:{original['owner']}/{original['repo']}{rev_or_ref}"
             case "gitlab":
