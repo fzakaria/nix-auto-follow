@@ -72,6 +72,17 @@ from nix_auto_follow.cli import (
                 {
                     "original": {
                         "type": "git",
+                        "url": "https://github.com/kaeeraa/ayugram-desktop",
+                    }
+                }
+            ),
+            "git+https://github.com/kaeeraa/ayugram-desktop",
+        ),
+        (
+            Node.from_dict(
+                {
+                    "original": {
+                        "type": "git",
                         "submodules": True,
                         "url": "https://github.com/kaeeraa/ayugram-desktop",
                     }
