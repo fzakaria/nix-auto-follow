@@ -68,6 +68,8 @@ class Node:
                 return f"file:{original['path']}"
             case "indirect":
                 return f"{original['id']}{ref}{rev}"
+            case "tarball":
+                return f"{original['url']}"
             case _:
                 raise ValueError(f"Unknown type {original['type']}")
 
