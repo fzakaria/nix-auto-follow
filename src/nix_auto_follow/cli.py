@@ -68,7 +68,7 @@ class Node:
                 return f"sourcehut:{original['owner']}/{original['repo']}{rev_or_ref}"
             case "tarball":
                 # This is hella complicated
-                pass
+                return ""
             case "path":
                 return f"file:{original['path']}"
             case "indirect":
