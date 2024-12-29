@@ -115,6 +115,19 @@ from nix_auto_follow.cli import (
             ),
             "git+ssh://git@gitlab.com/akibahmed/sops-secrects.git?ref=main&shallow=1",
         ),
+        (
+            Node.from_dict(
+                {
+                    "original": {
+                        "type": "sourcehut",
+                        "owner": "~rycee",
+                        "repo": "nmd",
+                        "url": "sourcehut:~rycee/nmd",
+                    }
+                }
+            ),
+            "sourcehut:~rycee/nmd",
+        ),
     ],
 )
 def test_get_url_for_node(node: Node, expected_url: str) -> None:

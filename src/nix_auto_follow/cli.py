@@ -66,9 +66,6 @@ class Node:
                 return f"gitlab:{original['owner']}/{original['repo']}{rev_or_ref}"
             case "sourcehut":
                 return f"sourcehut:{original['owner']}/{original['repo']}{rev_or_ref}"
-            case "tarball":
-                # This is hella complicated
-                return ""
             case "path":
                 return f"file:{original['path']}"
             case "indirect":
