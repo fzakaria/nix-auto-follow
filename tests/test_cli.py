@@ -122,7 +122,6 @@ from nix_auto_follow.cli import (
                         "type": "sourcehut",
                         "owner": "~rycee",
                         "repo": "nmd",
-                        "url": "sourcehut:~rycee/nmd",
                     }
                 }
             ),
