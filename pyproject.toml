@@ -53,7 +53,7 @@ write_to = "src/nix_auto_follow/_version.py"
 auto-follow = "nix_auto_follow.cli:start"
 
 [tool.isort]
-skip = [".git", "result"]
+skip = [".git", "result", "src/nix_auto_follow/_version.py"]
 profile = "black"
 
 [tool.black]
