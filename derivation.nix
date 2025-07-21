@@ -36,6 +36,8 @@ in
         (python3Packages.buildPythonPackage rec {
           pname = "types-Pygments";
           version = "2.17.0.20240310";
+          pyproject = true;
+          build-system = [setuptools];
 
           src = python.pkgs.fetchPypi {
             inherit pname version;
