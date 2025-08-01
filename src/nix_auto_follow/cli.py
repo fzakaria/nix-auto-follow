@@ -127,7 +127,7 @@ def check_lock_file(flake_lock: LockFile) -> bool:
                             f"Node {name} has input {key} pointing to {ref} which is not the same as {other_name}'s {other_key} which is {other_ref} in the lockfile."  # noqa: E501
                         )
                         print(
-                            f"Please add '{key}.url = \"{flake_lock.nodes[ref].get_url()}\"' or '{other_key}.url = \"{flake_lock.nodes[other_ref].get_url()}'"  # noqa: E501
+                            f"Please add '{key}.url = \"{flake_lock.nodes[ref].get_url()}\"' or '{other_key}.url = \"{flake_lock.nodes[other_ref].get_url()}\"'"  # noqa: E501
                         )  # noqa: E501
                         return False
 
