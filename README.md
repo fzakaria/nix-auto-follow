@@ -68,7 +68,7 @@ This will fail (exit code 1) if not everything can be deduped.
 ```console
 ❯ auto-follow -c
 Node a has input nixpkgs pointing to nixpkgs_2 which is not the same as b's nixpkgs which is nixpkgs_3 in the lockfile.
-Please add 'nixpkgs.url = "github:nixos/nixpkgs/nixos-23.11"' or 'nixpkgs.url = "github:nixos/nixpkgs/nixos-23.05'
+Please add 'nixpkgs.url = "github:nixos/nixpkgs/nixos-23.11"' or 'nixpkgs.url = "github:nixos/nixpkgs/nixos-23.05"'
 ```
 
 Note: This can still happen _even after modifying your lock file_.
