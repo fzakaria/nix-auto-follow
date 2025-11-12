@@ -1,0 +1,92 @@
+{
+  "root": "root",
+  "version": 7,
+  "nodes": {
+    "root": {
+      "inputs": {
+        "a": "a",
+        "dep": "dep_2"
+      }
+    },
+    "a": {
+      "inputs": {
+        "dep": "dep"
+      },
+      "locked": {
+        "lastModified": 1,
+        "narHash": "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "path": "./a",
+        "type": "path"
+      },
+      "original": {
+        "path": "./a",
+        "type": "path"
+      }
+    },
+    "dep": {
+      "inputs": {
+        "subdep": [
+          "a",
+          "subdep"
+        ]
+      },
+      "locked": {
+        "lastModified": 100,
+        "narHash": "sha256-dep1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "owner": "owner",
+        "repo": "dep",
+        "rev": "abc123",
+        "type": "github"
+      },
+      "original": {
+        "owner": "owner",
+        "repo": "dep",
+        "type": "github"
+      }
+    },
+    "dep_2": {
+      "inputs": {
+        "subdep": "subdep_2"
+      },
+      "locked": {
+        "lastModified": 200,
+        "narHash": "sha256-dep2AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "owner": "owner",
+        "repo": "dep",
+        "rev": "def456",
+        "type": "github"
+      },
+      "original": {
+        "owner": "owner",
+        "repo": "dep",
+        "type": "github"
+      }
+    },
+    "subdep": {
+      "inputs": null,
+      "locked": {
+        "lastModified": 1,
+        "narHash": "sha256-subAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "path": "./sub",
+        "type": "path"
+      },
+      "original": {
+        "path": "./sub",
+        "type": "path"
+      }
+    },
+    "subdep_2": {
+      "inputs": null,
+      "locked": {
+        "lastModified": 2,
+        "narHash": "sha256-subBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=",
+        "path": "./sub2",
+        "type": "path"
+      },
+      "original": {
+        "path": "./sub2",
+        "type": "path"
+      }
+    }
+  }
+}
