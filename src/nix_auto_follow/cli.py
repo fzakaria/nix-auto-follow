@@ -176,6 +176,8 @@ def update_flake_lock(flake_lock: LockFile) -> LockFile:
             continue
         canonical_node = flake_lock.nodes[ref]
         for node_ref in input_refs.get(key, ()):
+            if node_ref == ref:
+                continue
             target_node = flake_lock.nodes[node_ref]
             # Preserve the inputs field (dependency wiring)
             # Only unify the locked/original content
