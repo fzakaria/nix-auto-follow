@@ -178,6 +178,33 @@ def test_check_lock_file_success(filename: str) -> None:
         assert check_lock_file(modified_lock)
 
 
+def test_preserve_follows_references() -> None:
+    """Test that follows references in inputs are preserved during unification."""
+    with open("tests/fixtures/follows_references.json") as f:
+        flake_lock = LockFile.from_dict(json.load(f))
+        # precondition: dep and dep_2 have different locked content
+        assert (
+            flake_lock.nodes["dep"].remaining["locked"]
+            != flake_lock.nodes["dep_2"].remaining["locked"]
+        )
+        # precondition: dep has follows reference, dep_2 has direct reference
+        assert flake_lock.nodes["dep"].inputs == {"subdep": ["a", "subdep"]}
+        assert flake_lock.nodes["dep_2"].inputs == {"subdep": "subdep_2"}
+
+        modified_lock = update_flake_lock(flake_lock)
+
+        # postcondition: locked content is now identical
+        assert (
+            modified_lock.nodes["dep"].remaining["locked"]
+            == modified_lock.nodes["dep_2"].remaining["locked"]
+        )
+        # postcondition: inputs structure is preserved (follows vs direct)
+        assert modified_lock.nodes["dep"].inputs == {"subdep": ["a", "subdep"]}
+        assert modified_lock.nodes["dep_2"].inputs == {"subdep": "subdep_2"}
+        # check should pass
+        assert check_lock_file(modified_lock)
+
+
 def test_check_lock_file_fail() -> None:
     """
     This lockfile fails because there are follows beyond the root.
