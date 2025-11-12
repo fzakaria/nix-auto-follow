@@ -12,6 +12,7 @@ class ProgramArguments:
     filename: str = "flake.lock"
     in_place: bool = False
     check: bool = False
+    consolidate: bool = False
 
 
 @dataclass
@@ -98,6 +99,86 @@ class LockFile:
             "root": self.root,
             "version": self.version,
         }
+
+
+def consolidate_flake_lock(flake_lock: LockFile) -> LockFile:
+    """Convert direct references to follows where safe.
+
+    During traversal from root, if a child node has an input matching its
+    parent's input (same key, same locked content), convert to follows.
+    Then garbage collect any unreachable nodes.
+    """
+
+    def traverse(node_name: str, path: list[str]) -> None:
+        node = flake_lock.nodes.get(node_name)
+        if node is None or node.inputs is None:
+            return
+
+        for input_key, input_ref in node.inputs.items():
+            if isinstance(input_ref, list):
+                continue
+
+            child_node = flake_lock.nodes.get(input_ref)
+            if child_node is None or child_node.inputs is None:
+                traverse(input_ref, path + [input_key])
+                continue
+
+            # Only convert children at depth >= 2 (not direct children of root)
+            child_path = path + [input_key]
+            if len(child_path) >= 2:
+                # Check if child's inputs can become follows
+                for child_input_key, child_input_ref in list(child_node.inputs.items()):
+                    if isinstance(child_input_ref, list):
+                        continue
+
+                    # Does parent have same input?
+                    if child_input_key in node.inputs:
+                        parent_input_ref = node.inputs[child_input_key]
+                        if isinstance(parent_input_ref, list):
+                            continue
+
+                        # Compare locked content
+                        child_locked = flake_lock.nodes[child_input_ref].remaining.get(
+                            "locked"
+                        )
+                        parent_locked = flake_lock.nodes[
+                            parent_input_ref
+                        ].remaining.get("locked")
+
+                        if child_locked == parent_locked:
+                            # Convert to follows!
+                            child_node.inputs[child_input_key] = path + [
+                                child_input_key
+                            ]
+
+            # Recurse to children
+            traverse(input_ref, path + [input_key])
+
+    traverse(flake_lock.root, [])
+
+    # Garbage collect unreachable nodes
+    reachable: set[str] = {flake_lock.root}
+
+    def mark_reachable(node_name: str) -> None:
+        node = flake_lock.nodes.get(node_name)
+        if node is None or node.inputs is None:
+            return
+
+        for input_ref in node.inputs.values():
+            if isinstance(input_ref, list):
+                continue
+            if input_ref not in reachable:
+                reachable.add(input_ref)
+                mark_reachable(input_ref)
+
+    mark_reachable(flake_lock.root)
+
+    # Remove unreachable nodes
+    flake_lock.nodes = {
+        name: node for name, node in flake_lock.nodes.items() if name in reachable
+    }
+
+    return flake_lock
 
 
 def check_lock_file(flake_lock: LockFile) -> bool:
@@ -217,6 +298,11 @@ def start(
         action="store_true",
         help="Checks whether all entries in your lockfile are follows or equivalent.",
     )
+    parser.add_argument(
+        "--consolidate",
+        action="store_true",
+        help="Convert direct references to follows and remove duplicate nodes.",
+    )
 
     program_args: ProgramArguments = parser.parse_args(
         args, namespace=ProgramArguments()
@@ -239,9 +325,15 @@ def start(
             print("All ok!")
             return
 
-    modified_data = json.dumps(
-        update_flake_lock(LockFile.from_dict(flake_lock_json)).to_dict(), indent=2
-    )
+    # Apply version unification
+    flake_lock = LockFile.from_dict(flake_lock_json)
+    flake_lock = update_flake_lock(flake_lock)
+
+    # Apply consolidation if requested
+    if program_args.consolidate:
+        flake_lock = consolidate_flake_lock(flake_lock)
+
+    modified_data = json.dumps(flake_lock.to_dict(), indent=2)
 
     if program_args.in_place:
         if program_args.filename == "-":
