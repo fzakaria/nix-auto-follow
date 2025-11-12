@@ -1,0 +1,120 @@
+{
+  "root": "root",
+  "version": 7,
+  "nodes": {
+    "root": {
+      "inputs": {
+        "nixpkgs": "nixpkgs",
+        "parent": "parent"
+      }
+    },
+    "parent": {
+      "inputs": {
+        "utils": "utils",
+        "child": "child",
+        "nixpkgs": "nixpkgs_2"
+      },
+      "locked": {
+        "lastModified": 1,
+        "narHash": "sha256-parentAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "path": "./parent",
+        "type": "path"
+      },
+      "original": {
+        "path": "./parent",
+        "type": "path"
+      }
+    },
+    "child": {
+      "inputs": {
+        "utils": "utils_2",
+        "nixpkgs": "nixpkgs_3"
+      },
+      "locked": {
+        "lastModified": 1,
+        "narHash": "sha256-childAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "path": "./child",
+        "type": "path"
+      },
+      "original": {
+        "path": "./child",
+        "type": "path"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 100,
+        "narHash": "sha256-nixpkgsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "owner": "owner",
+        "repo": "nixpkgs",
+        "rev": "abc123",
+        "type": "github"
+      },
+      "original": {
+        "owner": "owner",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_2": {
+      "locked": {
+        "lastModified": 100,
+        "narHash": "sha256-nixpkgsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "owner": "owner",
+        "repo": "nixpkgs",
+        "rev": "abc123",
+        "type": "github"
+      },
+      "original": {
+        "owner": "owner",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_3": {
+      "locked": {
+        "lastModified": 100,
+        "narHash": "sha256-nixpkgsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "owner": "owner",
+        "repo": "nixpkgs",
+        "rev": "abc123",
+        "type": "github"
+      },
+      "original": {
+        "owner": "owner",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "utils": {
+      "locked": {
+        "lastModified": 200,
+        "narHash": "sha256-utilsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "owner": "owner",
+        "repo": "utils",
+        "rev": "def456",
+        "type": "github"
+      },
+      "original": {
+        "owner": "owner",
+        "repo": "utils",
+        "type": "github"
+      }
+    },
+    "utils_2": {
+      "locked": {
+        "lastModified": 200,
+        "narHash": "sha256-utilsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "owner": "owner",
+        "repo": "utils",
+        "rev": "def456",
+        "type": "github"
+      },
+      "original": {
+        "owner": "owner",
+        "repo": "utils",
+        "type": "github"
+      }
+    }
+  }
+}

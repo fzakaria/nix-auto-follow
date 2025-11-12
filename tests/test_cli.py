@@ -262,3 +262,36 @@ def test_node_keys_sorted() -> None:
         assert list(modified_lock_json["nodes"].keys()) == sorted(
             modified_lock_json["nodes"].keys()
         )
+
+
+def test_consolidation() -> None:
+    """Test consolidation converts direct refs to follows."""
+    from nix_auto_follow.cli import consolidate_flake_lock
+
+    # Use the nested_follows fixture which has duplicate nodes with direct refs
+    with open("tests/fixtures/nested_follows.json") as f:
+        flake_lock = LockFile.from_dict(json.load(f))
+
+        # Precondition: child has direct refs to utils_2 and nixpkgs_3
+        child_node = flake_lock.nodes["child"]
+        assert child_node.inputs is not None
+        assert child_node.inputs["utils"] == "utils_2"
+        assert child_node.inputs["nixpkgs"] == "nixpkgs_3"
+
+        # First apply version unification
+        flake_lock = update_flake_lock(flake_lock)
+
+        # Then apply consolidation
+        flake_lock = consolidate_flake_lock(flake_lock)
+
+        # Postcondition: child should now use follows refs to parent's inputs
+        child_node = flake_lock.nodes["child"]
+        assert child_node.inputs is not None
+
+        # Child's utils should follow parent's utils
+        assert isinstance(child_node.inputs["utils"], list)
+        assert child_node.inputs["utils"] == ["parent", "utils"]
+
+        # Child's nixpkgs should follow parent's nixpkgs
+        assert isinstance(child_node.inputs["nixpkgs"], list)
+        assert child_node.inputs["nixpkgs"] == ["parent", "nixpkgs"]
