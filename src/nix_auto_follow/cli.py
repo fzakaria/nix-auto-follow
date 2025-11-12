@@ -123,7 +123,10 @@ def check_lock_file(flake_lock: LockFile) -> bool:
                     if key != other_key:
                         continue
 
-                    if flake_lock.nodes[ref] != flake_lock.nodes[other_ref]:
+                    # Compare only locked content, not inputs wiring
+                    node_locked = flake_lock.nodes[ref].remaining.get("locked")
+                    other_locked = flake_lock.nodes[other_ref].remaining.get("locked")
+                    if node_locked != other_locked:
                         print(
                             f"Node {name} has input {key} pointing to {ref} which is not the same as {other_name}'s {other_key} which is {other_ref} in the lockfile."  # noqa: E501
                         )
