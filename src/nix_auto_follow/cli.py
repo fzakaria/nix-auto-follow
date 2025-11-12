@@ -1,4 +1,5 @@
 import argparse
+import copy
 import json
 import sys
 from dataclasses import dataclass, field
@@ -220,8 +221,17 @@ def update_flake_lock(
     for key, ref in root_inputs.items():
         if isinstance(ref, list):
             continue
+        canonical_node = flake_lock.nodes[ref]
         for node_ref in input_refs.get(key, ()):
-            flake_lock.nodes[node_ref] = flake_lock.nodes[ref]
+            target_node = flake_lock.nodes[node_ref]
+            # Preserve the inputs field (dependency wiring)
+            # Only unify the locked/original content
+            target_node.remaining["locked"] = copy.deepcopy(
+                canonical_node.remaining.get("locked")
+            )
+            target_node.remaining["original"] = copy.deepcopy(
+                canonical_node.remaining.get("original")
+            )
 
     return flake_lock
 
