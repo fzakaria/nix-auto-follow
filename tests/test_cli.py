@@ -7,6 +7,7 @@ from nix_auto_follow.cli import (
     LockFile,
     Node,
     check_lock_file,
+    collect_ignored_nodes,
     start,
     update_flake_lock,
 )
@@ -219,6 +220,77 @@ def test_top_level_keys_sorted() -> None:
 
         # postcondition: keys are sorted in modified file
         assert list(modified_lock_json.keys()) == sorted(modified_lock_json.keys())
+
+
+def test_collect_ignored_nodes_transitive_closure() -> None:
+    with open("tests/fixtures/ignore_subtree.json") as f:
+        flake_lock = LockFile.from_dict(json.load(f))
+        ignored = collect_ignored_nodes(flake_lock, ["pinned"])
+        # the whole subtree reachable from the "pinned" root input, including
+        # the nested (depth-2) nixpkgs:
+        assert ignored == {"pinned", "dep", "nixpkgs_pinned"}
+
+
+def test_collect_ignored_nodes_unknown_input_warns(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    with open("tests/fixtures/ignore_subtree.json") as f:
+        flake_lock = LockFile.from_dict(json.load(f))
+        assert collect_ignored_nodes(flake_lock, ["nonexistent"]) == set()
+        assert "does not match any root input" in capsys.readouterr().err
+
+
+def test_ignore_protects_subtree_but_collapses_siblings() -> None:
+    with open("tests/fixtures/ignore_subtree.json") as f:
+        flake_lock = LockFile.from_dict(json.load(f))
+        # precondition: every nixpkgs differs.
+        assert flake_lock.nodes["nixpkgs_pinned"] != flake_lock.nodes["nixpkgs_root"]
+        assert flake_lock.nodes["nixpkgs_other"] != flake_lock.nodes["nixpkgs_root"]
+
+        ignored = collect_ignored_nodes(flake_lock, ["pinned"])
+        modified_lock = update_flake_lock(flake_lock, ignored)
+
+        # the protected subtree keeps its own pin ...
+        assert (
+            modified_lock.nodes["nixpkgs_pinned"] != modified_lock.nodes["nixpkgs_root"]
+        )
+        # ... while the non-ignored sibling still collapses onto root.
+        assert (
+            modified_lock.nodes["nixpkgs_other"] == modified_lock.nodes["nixpkgs_root"]
+        )
+
+
+def test_ignore_default_collapses_everything() -> None:
+    with open("tests/fixtures/ignore_subtree.json") as f:
+        flake_lock = LockFile.from_dict(json.load(f))
+        # without an ignore list, both subtrees collapse onto root.
+        modified_lock = update_flake_lock(flake_lock)
+        assert (
+            modified_lock.nodes["nixpkgs_pinned"] == modified_lock.nodes["nixpkgs_root"]
+        )
+        assert (
+            modified_lock.nodes["nixpkgs_other"] == modified_lock.nodes["nixpkgs_root"]
+        )
+
+
+def test_check_lock_file_respects_ignore() -> None:
+    with open("tests/fixtures/ignore_subtree.json") as f:
+        flake_lock = LockFile.from_dict(json.load(f))
+        ignored = collect_ignored_nodes(flake_lock, ["pinned"])
+        modified_lock = update_flake_lock(flake_lock, ignored)
+        # with the subtree ignored the remaining inputs are consistent ...
+        assert check_lock_file(modified_lock, ignored)
+        # ... but a plain check still flags the intentionally-kept pin.
+        assert not check_lock_file(modified_lock)
+
+
+def test_start_with_ignore() -> None:
+    with open("tests/fixtures/ignore_subtree.json") as f:
+        stdout = io.StringIO()
+        start(args=["--ignore", "pinned", "-"], stdin=f, stdout=stdout)
+        flake_lock = LockFile.from_dict(json.loads(stdout.getvalue()))
+        assert flake_lock.nodes["nixpkgs_pinned"] != flake_lock.nodes["nixpkgs_root"]
+        assert flake_lock.nodes["nixpkgs_other"] == flake_lock.nodes["nixpkgs_root"]
 
 
 def test_node_keys_sorted() -> None:

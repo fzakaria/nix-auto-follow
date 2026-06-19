@@ -1,0 +1,106 @@
+{
+  "nodes": {
+    "dep": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_pinned"
+      },
+      "locked": {
+        "lastModified": 1,
+        "narHash": "sha256-dDdEpKBksdAQ8oTjZ8sN8YnYnYnYnYnYnYnYnYnYnY=",
+        "path": "./dep",
+        "type": "path"
+      },
+      "original": {
+        "path": "./dep",
+        "type": "path"
+      }
+    },
+    "nixpkgs_other": {
+      "locked": {
+        "lastModified": 1722372011,
+        "narHash": "sha256-B2xRiC3NEJy/82ugtareBkRqEkPGpMyjaLxaR8LBxNs=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "cf05eeada35e122770c5c14add958790fcfcbef5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-24.05",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_pinned": {
+      "locked": {
+        "lastModified": 1720535198,
+        "narHash": "sha256-zwVvxrdIzralnSbcpghA92tWu2DV2lwv89xZc8MTrbg=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "205fd4226592cc83fd4c0885a3e4c9c400efabb5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-23.11",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_root": {
+      "locked": {
+        "lastModified": 1730000000,
+        "narHash": "sha256-rOoTrOoTrOoTrOoTrOoTrOoTrOoTrOoTrOoTrOoTrOo=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "0000000000000000000000000000000000000000",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-24.11",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "other": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_other"
+      },
+      "locked": {
+        "lastModified": 1,
+        "narHash": "sha256-oThErOThErOThErOThErOThErOThErOThErOThErOO=",
+        "path": "./other",
+        "type": "path"
+      },
+      "original": {
+        "path": "./other",
+        "type": "path"
+      }
+    },
+    "pinned": {
+      "inputs": {
+        "dep": "dep"
+      },
+      "locked": {
+        "lastModified": 1,
+        "narHash": "sha256-pInNeDpInNeDpInNeDpInNeDpInNeDpInNeDpInNeDO=",
+        "path": "./pinned",
+        "type": "path"
+      },
+      "original": {
+        "path": "./pinned",
+        "type": "path"
+      }
+    },
+    "root": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_root",
+        "other": "other",
+        "pinned": "pinned"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
