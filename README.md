@@ -77,7 +77,7 @@ flake-parts.url = "github:hercules-ci/flake-parts";
 ❯ auto-follow -i --ignore flake-parts
 ```
 
-`--check` honours the same flag, so `auto-follow -c --ignore flake-parts` will not complain about the protected subtree.
+`--check` honors the same flag, so `auto-follow -c --ignore flake-parts` will not complain about the protected subtree.
 
 ```console
 ❯ auto-follow -c
