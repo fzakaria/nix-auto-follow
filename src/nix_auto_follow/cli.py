@@ -11,6 +11,7 @@ class ProgramArguments:
     filename: str = "flake.lock"
     in_place: bool = False
     check: bool = False
+    ignore: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -99,7 +100,44 @@ class LockFile:
         }
 
 
-def check_lock_file(flake_lock: LockFile) -> bool:
+def collect_ignored_nodes(flake_lock: LockFile, ignore: list[str]) -> set[str]:
+    """
+    Return every node reachable from the ignored inputs.
+    """
+    root_inputs = flake_lock.root_node.inputs or {}
+
+    pending: list[str] = []
+    for name in ignore:
+        ref = root_inputs.get(name)
+        if ref is None:
+            print(
+                f"Warning: --ignore '{name}' does not match any root input.",
+                file=sys.stderr,
+            )
+            continue
+        if isinstance(ref, list):
+            continue
+        pending.append(ref)
+
+    ignored: set[str] = set()
+    while pending:
+        node_name = pending.pop()
+        if node_name in ignored:
+            continue
+        ignored.add(node_name)
+        node = flake_lock.nodes.get(node_name)
+        if node is None or node.inputs is None:
+            continue
+        for child_ref in node.inputs.values():
+            if isinstance(child_ref, list):
+                continue
+            pending.append(child_ref)
+
+    return ignored
+
+
+def check_lock_file(flake_lock: LockFile, ignored: set[str] | None = None) -> bool:
+    ignored = ignored or set()
 
     for name, node in flake_lock.nodes.items():
 
@@ -110,6 +148,9 @@ def check_lock_file(flake_lock: LockFile) -> bool:
             if isinstance(ref, list):
                 continue
 
+            if ref in ignored:
+                continue
+
             for other_name, other_node in flake_lock.nodes.items():
 
                 if other_node.inputs is None:
@@ -117,6 +158,9 @@ def check_lock_file(flake_lock: LockFile) -> bool:
 
                 for other_key, other_ref in other_node.inputs.items():
                     if isinstance(other_ref, list):
+                        continue
+
+                    if other_ref in ignored:
                         continue
 
                     if key != other_key:
@@ -134,7 +178,11 @@ def check_lock_file(flake_lock: LockFile) -> bool:
     return True
 
 
-def update_flake_lock(flake_lock: LockFile) -> LockFile:
+def update_flake_lock(
+    flake_lock: LockFile, ignored: set[str] | None = None
+) -> LockFile:
+    ignored = ignored or set()
+
     # Start at root
     root_inputs = flake_lock.root_node.inputs
 
@@ -154,6 +202,8 @@ def update_flake_lock(flake_lock: LockFile) -> LockFile:
             continue
         for node_input_key, node_input_ref in node.inputs.items():
             if isinstance(node_input_ref, list):
+                continue
+            if node_input_ref in ignored:
                 continue
             input_refs.setdefault(node_input_key, []).append(node_input_ref)
 
@@ -202,6 +252,14 @@ def start(
         action="store_true",
         help="Checks whether all entries in your lockfile are follows or equivalent.",
     )
+    parser.add_argument(
+        "--ignore",
+        "-I",
+        action="append",
+        default=[],
+        metavar="INPUT",
+        help="Root input(s) to be ignored.",
+    )
 
     program_args: ProgramArguments = parser.parse_args(
         args, namespace=ProgramArguments()
@@ -216,16 +274,18 @@ def start(
 
     # Load the JSON data from the input
     flake_lock_json: dict[str, Any] = json.loads(input_data)
+    flake_lock = LockFile.from_dict(flake_lock_json)
+    ignored = collect_ignored_nodes(flake_lock, program_args.ignore)
 
     if program_args.check:
-        if not check_lock_file(LockFile.from_dict(flake_lock_json)):
+        if not check_lock_file(flake_lock, ignored):
             exit(1)
         else:
             print("All ok!")
             return
 
     modified_data = json.dumps(
-        update_flake_lock(LockFile.from_dict(flake_lock_json)).to_dict(), indent=2
+        update_flake_lock(flake_lock, ignored).to_dict(), indent=2
     )
 
     if program_args.in_place:

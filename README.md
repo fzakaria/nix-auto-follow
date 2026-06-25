@@ -65,6 +65,20 @@ All ok!
 
 This will fail (exit code 1) if not everything can be deduped.
 
+## Ignoring an input
+
+If do _not_ want to override some input, you can use `--ignore` with a root input.
+The entire input subtree will not be touched by nix-auto-follow.
+
+```console
+❯ cat flake.nix | grep flake-parts
+flake-parts.url = "github:hercules-ci/flake-parts";
+
+❯ auto-follow -i --ignore flake-parts
+```
+
+`--check` honors the same flag, so `auto-follow -c --ignore flake-parts` will not complain about the protected subtree.
+
 ```console
 ❯ auto-follow -c
 Node a has input nixpkgs pointing to nixpkgs_2 which is not the same as b's nixpkgs which is nixpkgs_3 in the lockfile.
