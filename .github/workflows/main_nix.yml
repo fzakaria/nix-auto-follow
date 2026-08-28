@@ -20,3 +20,7 @@ jobs:
         nix fmt -- --check . --exclude ./example/
         nix build
         nix flake check
+    # The integration tests drive a real `nix` against real flakes, so they
+    # cannot run inside the build sandbox (where they skip themselves).
+    - name: Integration tests
+      run: nix develop --command python -m pytest tests/test_integration.py -v
