@@ -8,6 +8,7 @@ from nix_auto_follow.cli import (
     Node,
     check_lock_file,
     collect_ignored_nodes,
+    is_unified,
     start,
     update_flake_lock,
 )
@@ -178,31 +179,190 @@ def test_check_lock_file_success(filename: str) -> None:
         assert check_lock_file(modified_lock)
 
 
-def test_preserve_follows_references() -> None:
-    """Test that follows references in inputs are preserved during unification."""
+def resolve(flake_lock: LockFile, ref: str | list[str]) -> str:
+    """
+    Resolve an input reference to a node name.
+
+    A string is already a node name; a list is a `follows` path walked from
+    the root. Raises KeyError if the reference dangles, which is what makes
+    this useful as a lockfile validity check.
+    """
+    if isinstance(ref, str):
+        if ref not in flake_lock.nodes:
+            raise KeyError(f"dangling reference {ref}")
+        return ref
+
+    current = flake_lock.root
+    for segment in ref:
+        inputs = flake_lock.nodes[current].inputs or {}
+        if segment not in inputs:
+            raise KeyError(f"follows path {ref} has no '{segment}' on node {current}")
+        current = resolve(flake_lock, inputs[segment])
+    return current
+
+
+def reachable_nodes(flake_lock: LockFile) -> set[str]:
+    """Every node reachable from the root, following both kinds of reference."""
+    seen: set[str] = set()
+    pending = [flake_lock.root]
+    while pending:
+        name = pending.pop()
+        if name in seen:
+            continue
+        seen.add(name)
+        for ref in (flake_lock.nodes[name].inputs or {}).values():
+            pending.append(resolve(flake_lock, ref))
+    return seen
+
+
+def assert_valid_lock_file(flake_lock: LockFile) -> None:
+    """Assert every reference in the lockfile resolves to a node."""
+    for name, node in flake_lock.nodes.items():
+        for key, ref in (node.inputs or {}).items():
+            try:
+                resolve(flake_lock, ref)
+            except KeyError as e:
+                raise AssertionError(f"node {name} input {key}: {e}") from e
+
+
+def test_follows_references_fixture_is_valid() -> None:
+    """The fixture has to be a lockfile Nix would accept, or it proves nothing."""
+    with open("tests/fixtures/follows_references.json") as f:
+        assert_valid_lock_file(LockFile.from_dict(json.load(f)))
+
+
+def test_follows_reference_is_preserved() -> None:
+    """
+    A `follows` declaration must survive unification.
+
+    nixvim's flake.nix says `nuschtosSearch.inputs.nixpkgs.follows = "nixpkgs"`,
+    which the lockfile stores as the path ["nixvim", "nixpkgs"]. Replacing it
+    with a direct reference makes Nix consider the entry stale and re-lock it,
+    so the tool's own output would be undone on the next evaluation.
+    """
     with open("tests/fixtures/follows_references.json") as f:
         flake_lock = LockFile.from_dict(json.load(f))
-        # precondition: dep and dep_2 have different locked content
+        # precondition: the two copies of nuschtosSearch are at different revs,
+        # and only nixvim's copy carries the follows.
+        assert flake_lock.nodes["nuschtosSearch"].remaining["locked"]["rev"] == "NS-NEW"
         assert (
-            flake_lock.nodes["dep"].remaining["locked"]
-            != flake_lock.nodes["dep_2"].remaining["locked"]
+            flake_lock.nodes["nuschtosSearch_2"].remaining["locked"]["rev"] == "NS-OLD"
         )
-        # precondition: dep has follows reference, dep_2 has direct reference
-        assert flake_lock.nodes["dep"].inputs == {"subdep": ["a", "subdep"]}
-        assert flake_lock.nodes["dep_2"].inputs == {"subdep": "subdep_2"}
+        assert flake_lock.nodes["nuschtosSearch_2"].inputs == {
+            "flake-utils": "flake-utils",
+            "nixpkgs": ["nixvim", "nixpkgs"],
+        }
 
         modified_lock = update_flake_lock(flake_lock)
 
-        # postcondition: locked content is now identical
+        # the follows survives ...
+        assert modified_lock.nodes["nuschtosSearch_2"].inputs == {
+            "nixpkgs": ["nixvim", "nixpkgs"]
+        }
+        # ... and the node still took on the canonical revision.
         assert (
-            modified_lock.nodes["dep"].remaining["locked"]
-            == modified_lock.nodes["dep_2"].remaining["locked"]
+            modified_lock.nodes["nuschtosSearch_2"].remaining
+            == modified_lock.nodes["nuschtosSearch"].remaining
         )
-        # postcondition: inputs structure is preserved (follows vs direct)
-        assert modified_lock.nodes["dep"].inputs == {"subdep": ["a", "subdep"]}
-        assert modified_lock.nodes["dep_2"].inputs == {"subdep": "subdep_2"}
-        # check should pass
+        assert_valid_lock_file(modified_lock)
+
+
+def test_unified_node_declares_the_canonical_revisions_inputs() -> None:
+    """
+    The input *keys* come from the canonical node, never from the target.
+
+    A node has to declare the input set of the revision it claims to be.
+    NS-OLD had a `flake-utils` input and NS-NEW does not, so carrying the
+    target's own key over would leave the node advertising an input its own
+    flake.nix no longer declares -- which Nix re-locks.
+    """
+    with open("tests/fixtures/follows_references.json") as f:
+        flake_lock = LockFile.from_dict(json.load(f))
+        assert "flake-utils" in (flake_lock.nodes["nuschtosSearch_2"].inputs or {})
+
+        modified_lock = update_flake_lock(flake_lock)
+
+        assert "flake-utils" not in (
+            modified_lock.nodes["nuschtosSearch_2"].inputs or {}
+        )
+
+
+def test_unification_collapses_the_duplicate_subtree() -> None:
+    """
+    Unifying a duplicate must also drop whatever only the duplicate pulled in.
+
+    Preserving the target's direct references would leave flake-utils live in
+    the closure, which defeats the point of the tool.
+    """
+    with open("tests/fixtures/follows_references.json") as f:
+        flake_lock = LockFile.from_dict(json.load(f))
+        assert "flake-utils" in reachable_nodes(flake_lock)
+
+        modified_lock = update_flake_lock(flake_lock)
+
+        assert "flake-utils" not in reachable_nodes(modified_lock)
+        # the duplicate nixpkgs nodes stay reachable -- unification equalises
+        # their content rather than rewriting references -- but they now all
+        # carry the root's revision.
+        assert reachable_nodes(modified_lock) == {
+            "root",
+            "nixpkgs",
+            "nixpkgs_2",
+            "nixpkgs_3",
+            "nixvim",
+            "nuschtosSearch",
+            "nuschtosSearch_2",
+        }
+        for name in ("nixpkgs_2", "nixpkgs_3"):
+            assert (
+                modified_lock.nodes[name].remaining
+                == modified_lock.nodes["nixpkgs"].remaining
+            )
+
+
+def test_check_accepts_nodes_differing_only_in_follows() -> None:
+    """`--check` has to accept exactly what update_flake_lock produces."""
+    with open("tests/fixtures/follows_references.json") as f:
+        flake_lock = LockFile.from_dict(json.load(f))
+        assert not check_lock_file(flake_lock)
+
+        modified_lock = update_flake_lock(flake_lock)
+
+        # nuschtosSearch and nuschtosSearch_2 are not equal as Nodes -- one has
+        # a follows -- but they are unified, so the check must pass.
+        assert (
+            modified_lock.nodes["nuschtosSearch"]
+            != modified_lock.nodes["nuschtosSearch_2"]
+        )
+        assert is_unified(
+            modified_lock.nodes["nuschtosSearch"],
+            modified_lock.nodes["nuschtosSearch_2"],
+        )
         assert check_lock_file(modified_lock)
+
+
+@pytest.mark.parametrize(
+    "attribute, value",
+    [
+        # same rev, but pinned differently -- update_flake_lock still rewrites
+        # `original`, so `--check` must not call this clean.
+        ("original", {"owner": "NixOS", "repo": "nixpkgs", "type": "github"}),
+        # a non-flake source unified with a flake one fails to evaluate.
+        ("flake", False),
+    ],
+)
+def test_check_catches_divergence_outside_locked(attribute: str, value: object) -> None:
+    """
+    Comparing only `locked` is too weak: it lets `--check` report a lockfile
+    as clean that update_flake_lock would still rewrite.
+    """
+    with open("tests/fixtures/follows_references.json") as f:
+        flake_lock = update_flake_lock(LockFile.from_dict(json.load(f)))
+        assert check_lock_file(flake_lock)
+
+        flake_lock.nodes["nixpkgs_3"].remaining[attribute] = value
+
+        assert not check_lock_file(flake_lock)
 
 
 def test_check_lock_file_fail() -> None:

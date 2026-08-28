@@ -1,92 +1,134 @@
 {
-  "root": "root",
-  "version": 7,
   "nodes": {
-    "root": {
-      "inputs": {
-        "a": "a",
-        "dep": "dep_2"
-      }
-    },
-    "a": {
-      "inputs": {
-        "dep": "dep"
-      },
+    "flake-utils": {
       "locked": {
-        "lastModified": 1,
-        "narHash": "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
-        "path": "./a",
-        "type": "path"
+        "lastModified": 5,
+        "narHash": "sha256-flakeutilsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "FU-9999",
+        "type": "github"
       },
       "original": {
-        "path": "./a",
-        "type": "path"
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
       }
     },
-    "dep": {
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1,
+        "narHash": "sha256-nixpkgs1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "NP-AAAA",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_2": {
+      "locked": {
+        "lastModified": 2,
+        "narHash": "sha256-nixpkgs2AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "NP-BBBB",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_3": {
+      "locked": {
+        "lastModified": 3,
+        "narHash": "sha256-nixpkgs3AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "NP-CCCC",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixvim": {
       "inputs": {
-        "subdep": [
-          "a",
-          "subdep"
+        "nixpkgs": "nixpkgs_3",
+        "nuschtosSearch": "nuschtosSearch_2"
+      },
+      "locked": {
+        "lastModified": 30,
+        "narHash": "sha256-nixvimAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "owner": "nix-community",
+        "repo": "nixvim",
+        "rev": "NV-1111",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "nixvim",
+        "type": "github"
+      }
+    },
+    "nuschtosSearch": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_2"
+      },
+      "locked": {
+        "lastModified": 20,
+        "narHash": "sha256-searchNewAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "owner": "NuschtOS",
+        "repo": "search",
+        "rev": "NS-NEW",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NuschtOS",
+        "repo": "search",
+        "type": "github"
+      }
+    },
+    "nuschtosSearch_2": {
+      "inputs": {
+        "flake-utils": "flake-utils",
+        "nixpkgs": [
+          "nixvim",
+          "nixpkgs"
         ]
       },
       "locked": {
-        "lastModified": 100,
-        "narHash": "sha256-dep1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
-        "owner": "owner",
-        "repo": "dep",
-        "rev": "abc123",
+        "lastModified": 10,
+        "narHash": "sha256-searchOldAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "owner": "NuschtOS",
+        "repo": "search",
+        "rev": "NS-OLD",
         "type": "github"
       },
       "original": {
-        "owner": "owner",
-        "repo": "dep",
+        "owner": "NuschtOS",
+        "repo": "search",
         "type": "github"
       }
     },
-    "dep_2": {
+    "root": {
       "inputs": {
-        "subdep": "subdep_2"
-      },
-      "locked": {
-        "lastModified": 200,
-        "narHash": "sha256-dep2AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
-        "owner": "owner",
-        "repo": "dep",
-        "rev": "def456",
-        "type": "github"
-      },
-      "original": {
-        "owner": "owner",
-        "repo": "dep",
-        "type": "github"
-      }
-    },
-    "subdep": {
-      "inputs": null,
-      "locked": {
-        "lastModified": 1,
-        "narHash": "sha256-subAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
-        "path": "./sub",
-        "type": "path"
-      },
-      "original": {
-        "path": "./sub",
-        "type": "path"
-      }
-    },
-    "subdep_2": {
-      "inputs": null,
-      "locked": {
-        "lastModified": 2,
-        "narHash": "sha256-subBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=",
-        "path": "./sub2",
-        "type": "path"
-      },
-      "original": {
-        "path": "./sub2",
-        "type": "path"
+        "nixpkgs": "nixpkgs",
+        "nixvim": "nixvim",
+        "nuschtosSearch": "nuschtosSearch"
       }
     }
-  }
+  },
+  "root": "root",
+  "version": 7
 }

@@ -137,6 +137,65 @@ def collect_ignored_nodes(flake_lock: LockFile, ignore: list[str]) -> set[str]:
     return ignored
 
 
+def unify_node(canonical: Node, target: Node) -> Node:
+    """
+    Return a copy of `canonical` that keeps `target`'s follows declarations.
+
+    Making a duplicate input resolve to a single version means giving it the
+    canonical node's identity (`locked`, `original`, and every other
+    attribute such as `flake = false`) *and* the canonical node's dependency
+    wiring, so that duplicated subtrees collapse too.
+
+    The one thing that must survive is a `follows` declaration, which the
+    lockfile stores as a list rather than a string. Those come from a
+    `foo.inputs.bar.follows = "baz"` in some flake.nix; replacing one with a
+    direct reference makes Nix consider the entry stale and re-lock it on the
+    next evaluation, which undoes our work.
+
+    The keys are taken from `canonical`, never from `target`: a node must
+    declare the input set of the revision it claims to be. An input that only
+    the target's older revision had is dropped, and one that only the
+    canonical revision has is added.
+    """
+    inputs: dict[str, str | list[str]] | None = None
+    if canonical.inputs is not None:
+        target_inputs = target.inputs or {}
+        inputs = {}
+        for key, ref in canonical.inputs.items():
+            target_ref = target_inputs.get(key)
+            if isinstance(target_ref, list):
+                inputs[key] = list(target_ref)
+            else:
+                inputs[key] = copy.deepcopy(ref)
+
+    return Node(inputs=inputs, remaining=copy.deepcopy(canonical.remaining))
+
+
+def is_unified(node: Node, other: Node) -> bool:
+    """
+    Whether two nodes resolve to the same input as far as this tool cares.
+
+    This is the equivalence relation `unify_node` establishes, and the one
+    `check_lock_file` has to test for `--check` to mean "running the tool is
+    a no-op". Everything is compared except `follows` declarations, which
+    `unify_node` deliberately leaves alone and which may therefore legitimately
+    differ between two otherwise-identical nodes.
+    """
+
+    if node.remaining != other.remaining:
+        return False
+
+    inputs, other_inputs = node.inputs or {}, other.inputs or {}
+    if inputs.keys() != other_inputs.keys():
+        return False
+
+    return all(
+        inputs[key] == other_inputs[key]
+        for key in inputs
+        if not isinstance(inputs[key], list) and not isinstance(other_inputs[key], list)
+    )
+
+
 def check_lock_file(flake_lock: LockFile, ignored: set[str] | None = None) -> bool:
     ignored = ignored or set()
 
@@ -167,10 +226,9 @@ def check_lock_file(flake_lock: LockFile, ignored: set[str] | None = None) -> bo
                     if key != other_key:
                         continue
 
-                    # Compare only locked content, not inputs wiring
-                    node_locked = flake_lock.nodes[ref].remaining.get("locked")
-                    other_locked = flake_lock.nodes[other_ref].remaining.get("locked")
-                    if node_locked != other_locked:
+                    if not is_unified(
+                        flake_lock.nodes[ref], flake_lock.nodes[other_ref]
+                    ):
                         print(
                             f"Node {name} has input {key} pointing to {ref} which is not the same as {other_name}'s {other_key} which is {other_ref} in the lockfile."  # noqa: E501
                         )
@@ -226,14 +284,10 @@ def update_flake_lock(
             continue
         canonical_node = flake_lock.nodes[ref]
         for node_ref in input_refs.get(key, ()):
-            target_node = flake_lock.nodes[node_ref]
-            # Preserve the inputs field (dependency wiring)
-            # Only unify the locked/original content
-            target_node.remaining["locked"] = copy.deepcopy(
-                canonical_node.remaining.get("locked")
-            )
-            target_node.remaining["original"] = copy.deepcopy(
-                canonical_node.remaining.get("original")
+            if node_ref == ref:
+                continue
+            flake_lock.nodes[node_ref] = unify_node(
+                canonical_node, flake_lock.nodes[node_ref]
             )
 
     return flake_lock
