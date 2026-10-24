@@ -8,7 +8,7 @@ in
   python3Packages.buildPythonApplication rec {
     name = "nix-auto-follow";
     pyproject = true;
-    SETUPTOOLS_SCM_PRETEND_VERSION = "0.0.0";
+    env.SETUPTOOLS_SCM_PRETEND_VERSION = "0.0.0";
 
     src = fs.toSource {
       root = ./.;
